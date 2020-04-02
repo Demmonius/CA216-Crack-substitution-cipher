@@ -1,0 +1,1 @@
+/nix/store/wbgbp6lc4npi2hxsz1akcxf0mlndn1d7-python3-3.5.9/lib/python3.5/codecs.py
