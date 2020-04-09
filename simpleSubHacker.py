@@ -3,6 +3,8 @@
 # * Forked by Jared Wiese
 
 import os, re, copy, pprint, simpleSubCipher, makeWordPatterns
+from functools import partial
+from multiprocessing import Pool, Lock, Value, Process
 
 if not os.path.exists('wordPatterns.py'):
     makeWordPatterns.main()  # create the wordPatterns.py file
@@ -29,11 +31,11 @@ def addLettersToMapping(letterMapping, cipherword, candidate):
     # This function adds the letters of the candidate as potential
     # decryption letters for the cipherLetters in the cipherLetter
     # mapping.
-
-    letterMapping = copy.deepcopy(letterMapping)
+    newletterMapping = copy.deepcopy(letterMapping)
     for i in range(len(cipherword)):
-        if candidate[i] not in letterMapping[cipherword[i]]:
-            letterMapping[cipherword[i]].append(candidate[i])
+        if candidate[i] not in newletterMapping[cipherword[i]]:
+            newletterMapping[cipherword[i]].append(candidate[i])
+    letterMapping = newletterMapping
     return letterMapping
 
 
@@ -95,23 +97,26 @@ def removeSolvedLettersFromMapping(letterMapping):
 
 
 def hackSimpleSub(cipherText):
-    intersectedMap = getBlankcipherLetterMapping()
-    cipherwordList = nonLettersOrSpacePattern.sub('', cipherText.upper()).split()
-    for cipherword in cipherwordList:
-        # Get a new cipherLetter mapping for each cipherText word.
-        newMap = getBlankcipherLetterMapping()
+    lock = Lock()
+    with Pool() as ThreadPool:
+        intersectedMap = getBlankcipherLetterMapping()
+        cipherwordList = nonLettersOrSpacePattern.sub('', cipherText.upper()).split()
+        for cipherword in cipherwordList:
+            # Get a new cipherLetter mapping for each cipherText word.
+            newMap = getBlankcipherLetterMapping()
 
-        wordPattern = makeWordPatterns.getWordPattern(cipherword)
-        if wordPattern not in wordPatterns.allPatterns:
-            continue  # This word was not in our dictionary, so continue.
+            wordPattern = makeWordPatterns.getWordPattern(cipherword)
+            if wordPattern not in wordPatterns.allPatterns:
+                continue  # This word was not in our dictionary, so continue.
 
-        # Add the letters of each candidate to the mapping.
-        for candidate in wordPatterns.allPatterns[wordPattern]:
-            newMap = addLettersToMapping(newMap, cipherword, candidate)
+            # Add the letters of each candidate to the mapping.
+            for candidate in wordPatterns.allPatterns[wordPattern]:
+                newMap = addLettersToMapping(newMap, cipherword, candidate)
 
-        # Intersect the new mapping with the existing intersected mapping.
-        intersectedMap = intersectMappings(intersectedMap, newMap)
+            intersectedMap = intersectMappings(intersectedMap, newMap)
 
+    ThreadPool.close()
+    ThreadPool.join()
     # Remove any solved letters from the other lists.
     return removeSolvedLettersFromMapping(intersectedMap)
 
