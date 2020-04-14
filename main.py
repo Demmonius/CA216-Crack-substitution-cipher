@@ -1,10 +1,10 @@
 import argparse
 import string
 import pprint
+import time
 
-import makeWordPatterns
-from cryptoAnalysis.utils import getOccurences
-from simpleSubCipher import LETTERS
+
+from string import ascii_uppercase as LETTERS
 from simpleSubHacker import hackSimpleSub, decryptWithcipherLetterMapping
 
 translator = str.maketrans('', '', string.punctuation.replace("_", ""))
@@ -71,19 +71,18 @@ def useDictionary(text):
     # Determine the possible valid cipherText translations.
     print('Hacking...')
     letterMapping = hackSimpleSub(text)
+    print()
     # Display the results to the user.
     print('Original Cipher Text: ')
     print(text)
     print()
 
     print("Letters map:")
-    pprint.pprint(letterMapping)
+    #pprint.pprint(letterMapping)
     print()
 
     decryptedMessage = decryptWithcipherLetterMapping(text, letterMapping)
     findPossibilities(text, decryptedMessage, letterMapping)
-    # print(decryptedMessage)
-
 
 def main(text):
     # getOccurences(text.lower())
@@ -102,4 +101,5 @@ if __name__ == '__main__':
     if args.file:
         f = open(args.file, "r")
         text = f.read()
+
     main(text)

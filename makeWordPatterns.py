@@ -10,8 +10,6 @@ import pprint
 
 
 def getWordPattern(word):
-    # Returns a string of the pattern form of the given word.
-    # e.g. '0.1.2.3.4.5.6.1.7.3.8.2' for 'CRYPTOGRAPHY'
     word = word.upper()
     nextNum = 0
     letterNums = {}
@@ -33,7 +31,6 @@ def main():
     fo.close()
 
     for word in wordList:
-        # Get the pattern for each string in wordList.
         pattern = getWordPattern(word)
 
         if pattern not in allPatterns:
@@ -41,8 +38,6 @@ def main():
         else:
             allPatterns[pattern].append(word)
 
-    # This is code that writes code. The wordPatterns.py file contains
-    # one very, very large assignment statement.
     fo = open('wordPatterns.py', 'w')
     fo.write('allPatterns = ')
     fo.write(pprint.pformat(allPatterns))
